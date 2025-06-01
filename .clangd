@@ -7,5 +7,13 @@ CompileFlags:
         - -IC:\Users\99130\scoop\apps\gcc-arm-none-eabi\current\lib\gcc\arm-none-eabi\14.2.1\include
         - -IC:\Users\99130\scoop\apps\gcc-arm-none-eabi\current\lib\gcc\arm-none-eabi\14.2.1\include-fixed
         - -IC:\Users\99130\scoop\apps\gcc-arm-none-eabi\current\arm-none-eabi\include
+        - -IC:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um
+        - -Ic:\users\test\.eide\tools\gcc_arm\arm-none-eabi\include\newlib-nano
+        - -Ic:\users\test\.eide\tools\gcc_arm\arm-none-eabi\include\c++\10.2.1
+        - -Ic:\users\test\.eide\tools\gcc_arm\arm-none-eabi\include\c++\10.2.1\arm-none-eabi\thumb\v7e-m+fp\softfp
+        - -Ic:\users\test\.eide\tools\gcc_arm\arm-none-eabi\include\c++\10.2.1\backward
+        - -Ic:\users\test\.eide\tools\gcc_arm\lib\gcc\arm-none-eabi\10.2.1\include
+        - -Ic:\users\test\.eide\tools\gcc_arm\lib\gcc\arm-none-eabi\10.2.1\include-fixed
+        - -Ic:\users\test\.eide\tools\gcc_arm\arm-none-eabi\include
     CompilationDatabase: ./build/Debug
-    Compiler: C:\Users\99130\scoop\apps\gcc-arm-none-eabi\current\bin\arm-none-eabi-g++.exe
+    Compiler: C:\Users\test\.eide\tools\gcc_arm\bin\arm-none-eabi-g++.exe

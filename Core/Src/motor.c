@@ -83,17 +83,18 @@ void Motor_Speed(MotorConfig *motor, int speed)
     motor->target_speed = speed;
 }
 
-void Car_Speed_Percentage(CarConfig *car, int8_t p)
+void Car_Speed_Percentage(CarConfig *car, int8_t p1, int8_t p2)
 {
-    int s = (p * MAX_SPEED) / 100;
-    Car_Speed(car, s);
+    int s1 = (p1 * MAX_SPEED) / 100;
+    int s2 = (p2 * MAX_SPEED) / 100;
+    Car_Speed(car, p1, p2);
 }
 
-void Car_Speed(CarConfig *car, int s)
+void Car_Speed(CarConfig *car, int s1, int s2)
 {
-    car->speed = s;
-    Motor_Speed(&car->motor[0], s);
-    Motor_Speed(&car->motor[1], s);
+    car->speed = (s1 + s2) / 2;
+    Motor_Speed(&car->motor[0], s1);
+    Motor_Speed(&car->motor[1], s2);
 }
 
 void Car_Test(CarConfig *car)

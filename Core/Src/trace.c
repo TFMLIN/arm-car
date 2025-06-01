@@ -1,7 +1,7 @@
 #include "trace.h"
 #include "stdio.h"
 #include "stm32f4xx_hal.h"
-
+//灰度
 uint8_t Trace_ReadRegister()
 {
     uint8_t data;

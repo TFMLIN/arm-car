@@ -35,8 +35,8 @@ typedef struct {
 
 extern CarConfig car;
 
-void Car_Speed_Percentage(CarConfig *car, int8_t p);
-void Car_Speed(CarConfig *car, int s);
+void Car_Speed_Percentage(CarConfig *car, int8_t p1, int8_t p2);
+void Car_Speed(CarConfig *car, int s1, int s2);
 void Car_Init(CarConfig *car);
 void Car_Test(CarConfig *car);
 int32_t Get_Encoder_Count(MotorConfig *motor);

@@ -2,6 +2,7 @@
 #include "stm32f407xx.h"
 #include "stm32f4xx_hal.h"
 #include "i2c.h"
+//陀螺仪
 int32_t IICwriteBytes(uint8_t dev, uint8_t reg, uint8_t *data, uint32_t length)
 {
     HAL_StatusTypeDef status;
