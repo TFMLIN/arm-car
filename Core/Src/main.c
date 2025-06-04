@@ -32,6 +32,7 @@
 #include "trace.h"
 #include "pca9685.h"
 #include "servo.h"
+#include "work.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,6 +109,7 @@ int main(void)
     MX_TIM3_Init();
     MX_TIM6_Init();
     MX_TIM4_Init();
+    MX_USART3_UART_Init();
     /* USER CODE BEGIN 2 */
     printf("begin\r\n");
     HAL_UART_Receive_IT(&huart1, &RxData1, 1);
@@ -122,7 +124,7 @@ int main(void)
     // PCA9685_SetDebug(1);
 
     // 初始化PCA9685
-    PCA9685_Init(&hi2c1);
+    PCA9685_Init(&hi2c1, 1);
 
     // 设置PWM频率为50Hz（舵机常用频率）
     PCA9685_SetPWMFreq(&hi2c1, 50.0f);
@@ -136,19 +138,25 @@ int main(void)
         HAL_Delay(100);
     }
 
-
     // int turn_pulse = 2180;
     // PCA9685_SetServoPulse(&hi2c1, 0, mid + 500);
     // PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse);
-    
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     int i = 0, led = 0;
-    int mode = -1;
+    // int mode = -1;
+    HAL_Delay(1000);                 // 等待1秒钟，确保系统稳定
+    WorkInit(&car, &pca9685_handle); // 初始化工作状态
+    mode0();
+    // mode1();         // 进入模式1，开始直行
+    HAL_Delay(1000); // 等待1秒钟，确保系统稳定
+    mode2();
     while (1) {
-        
+        // uint8_t trace_state = Trace_ReadRegister();
+        // printf("in main Trace State: %02X\r\n", trace_state);
         // if (YawZ > 180) {
         //     YawZ -= 360;
         // }
@@ -243,11 +251,11 @@ void jy61p_ReceiveData(uint8_t data)
             uint8_t sum = 0x55 + 0x53 + buffer[2] + buffer[3] + buffer[4] + buffer[5] + buffer[6] + buffer[7] + buffer[8] + buffer[9];
             if (sum != buffer[10]) return;
             // printf("data received: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\r\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10]);
-            RollX  = (float)(((buffer[3] << 8) | buffer[2]) / 32768.0 * 180) - zRollx;
-            PitchY = (float)(((buffer[5] << 8) | buffer[4]) / 32768.0 * 180) - zPitchY;
-            YawZ   = (float)(((buffer[7] << 8) | buffer[6]) / 32768.0 * 180) - zYawZ;
-            if (YawZ < 0) {
-                YawZ += 360; // 确保YawZ在0到360度之间
+            work.RollX  = (float)(((buffer[3] << 8) | buffer[2]) / 32768.0 * 180) - work.zRollx;
+            work.PitchY = (float)(((buffer[5] << 8) | buffer[4]) / 32768.0 * 180) - work.zPitchY;
+            work.YawZ   = (float)(((buffer[7] << 8) | buffer[6]) / 32768.0 * 180) - work.zYawZ;
+            if (work.YawZ < 0) {
+                work.YawZ += 360; // 确保YawZ在0到360度之间
             }
             // 处理`角度数据
             // printf("%.2f,%.2f,%.2f\r\n", RollX, PitchY, YawZ);

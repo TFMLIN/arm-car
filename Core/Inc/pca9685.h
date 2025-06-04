@@ -24,8 +24,16 @@
 #define PCA9685_RESTART       0x80 // Restart bit for mode register
 #define PCA9685_SLEEP         0x10 // Sleep bit for mode register
 
+typedef struct {
+    I2C_HandleTypeDef *hi2c; // I2C handle
+    uint8_t debug_enabled;   // Debug mode flag
+    uint8_t address;         // I2C address of PCA9685
+} PCA9685_HandleTypeDef;
+
+extern PCA9685_HandleTypeDef pca9685_handle;
+
 // Function declarations
-void PCA9685_Init(I2C_HandleTypeDef *hi2c);
+void PCA9685_Init(I2C_HandleTypeDef *hi2c, uint8_t debug);
 void PCA9685_SetDebug(uint8_t enable);
 void PCA9685_SetPWMFreq(I2C_HandleTypeDef *hi2c, float freq);
 void PCA9685_SetPWM(I2C_HandleTypeDef *hi2c, uint8_t channel, uint16_t on, uint16_t off);

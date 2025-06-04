@@ -126,30 +126,44 @@ int main(void)
 
     // 设置PWM频率为50Hz（舵机常用频率）
     PCA9685_SetPWMFreq(&hi2c1, 50.0f);
-    int mid = 1470;
+    int mid = 1570;
     PCA9685_SetServoPulse(&hi2c1, 0, mid); // 设置第一个舵机到中位1.5ms
     Car_Init(&car);
     Car_Speed_Percentage(&car, 0, 0);
+
+    for (int i = 0; i < 6; i++) {
+        HAL_GPIO_WritePin(GPIOB, LED3_Pin, (i & 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        HAL_Delay(100);
+    }
+
+
+    // int turn_pulse = 2180;
+    // PCA9685_SetServoPulse(&hi2c1, 0, mid + 500);
+    // PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse);
+    
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     int i = 0, led = 0;
+    int mode = -1;
     while (1) {
-        if (YawZ > 180) {
-            YawZ -= 360;
-        }
-        int servo_pulse = mid + (int)(YawZ * 10);   // 将YawZ转换为舵机脉冲宽度
-        if (servo_pulse < 1000) servo_pulse = 1000; // 限制最小脉冲宽度
-        if (servo_pulse > 2000) servo_pulse = 2000; // 限制最大脉冲宽度
-        printf("YawZ: %.2f, Servo Pulse: %d\r\n", YawZ, servo_pulse);
-        PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
+        
+        // if (YawZ > 180) {
+        //     YawZ -= 360;
+        // }
+        // int servo_pulse = mid + (car.speed > 0 ? 1 : -1) * (int)(YawZ * 30); // 将YawZ转换为舵机脉冲宽度
+        // if (servo_pulse < 1000) servo_pulse = 1000;                          // 限制最小脉冲宽度
+        // if (servo_pulse > 2000) servo_pulse = 2000;                          // 限制最大脉冲宽度
+        // printf("YawZ: %.2f, Servo Pulse: %d\r\n", YawZ, servo_pulse);
+        // PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
         i++;
         if (i == 10) {
             i   = 0;
             led = !led;
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, led ? GPIO_PIN_SET : GPIO_PIN_RESET); // 切换LED状态
+            HAL_GPIO_WritePin(GPIOB, LED3_Pin, led ? GPIO_PIN_SET : GPIO_PIN_RESET); // 切换LED状态
         }
+        HAL_Delay(10);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -257,7 +271,7 @@ void control_ReceiveData(uint8_t data)
         if (index == 5) {
             // 解析数据
             // printf("data received: %02X %02X %02X %02X %02X\r\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
-            // printf("Speed:%d,%d\r\n", speed[0], speed[1]);
+            printf("Speed:%d,%d\r\n", speed[0], speed[1]);
             Car_Speed(&car, speed[0], speed[1]);
         }
     } else {
