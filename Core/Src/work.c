@@ -20,6 +20,17 @@ void WorkInit(CarConfig *car, PCA9685_HandleTypeDef *pca)
     work.pca     = pca;
 }
 
+void blink()
+{
+    static uint8_t i = 0, led = 0;
+    i++;
+    if (i == 10) {
+        i   = 0;
+        led = !led;
+        HAL_GPIO_WritePin(GPIOB, LED3_Pin, led ? GPIO_PIN_SET : GPIO_PIN_RESET); // 切换LED状态
+    }
+}
+
 // 模式0：待机，停止并矫正
 void mode0()
 {
@@ -28,9 +39,12 @@ void mode0()
     work.zYawZ = work.YawZ; // 更新偏航角为当前值
     PCA9685_SetServoPulse(work.pca->hi2c, 0, SERVO_PWM_MID);
 }
-// 模式1：直行
+
+// 模式1：0度直行
 void mode1()
 {
+    printf("begin yaw:%.2f\r\n", work.YawZ);
+
     Car_Speed(work.car, 100, 100);
     int trace_cnt       = 0;
     uint8_t trace_flag  = 0;
@@ -39,7 +53,7 @@ void mode1()
     uint8_t led         = 0;
     while (trace_flag == 0) {
         trace_state = Trace_ReadRegister();
-        printf("Trace State: %02X\r\n", trace_state);
+        // printf("Trace State: %02X\r\n", trace_state);
         if (trace_state != 0xff) {
             trace_cnt++;
             if (trace_cnt == 5) {
@@ -56,127 +70,228 @@ void mode1()
         int servo_pulse = SERVO_PWM_MID + (work.car->speed > 0 ? 1 : -1) * (int)(work.YawZ * 30); // 将YawZ转换为舵机脉冲宽度
         if (servo_pulse < 1000) servo_pulse = 1000;                                               // 限制最小脉冲宽度
         if (servo_pulse > 2000) servo_pulse = 2000;                                               // 限制最大脉冲宽度
-        printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
+        // printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
         PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
 
-        i++;
-        if (i == 10) {
-            i   = 0;
-            led = !led;
-            HAL_GPIO_WritePin(GPIOB, LED3_Pin, led ? GPIO_PIN_SET : GPIO_PIN_RESET); // 切换LED状态
-        }
+        blink();
         HAL_Delay(10);
     }
     Car_Speed(work.car, 0, 0);
+    printf("end yaw:%.2f\r\n", work.YawZ);
 }
 
-// // 模式2：循迹转180°
-// void mode2()
-// {
-//     Car_Speed(work.car, 100, 100);
-//     int trace_cnt           = 0;
-//     uint8_t trace_flag      = 0;
-//     uint8_t trace_state     = 0;
-//     uint8_t motor_left_base = 90, motor_right_base = 50;
-//     uint8_t left_speed, right_speed;
-//     int turn_pulse = SERVO_PWM_MID + 700;                   // 设定转向舵机脉冲宽度
-//     PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse);           // 设置舵机到转向位置
-//     Car_Speed(work.car, motor_left_base, motor_right_base); // 启动车辆
-//     uint8_t i   = 0;
-//     uint8_t led = 0;
-//     while (trace_flag == 0) {
-//         trace_state = ~Trace_ReadRegister();
-//         // trace_state &= 0xff;
-//         printf("Trace State: %02X\r\n", trace_state);
-//         // printf("Trace compare: %d\r\n", trace_state == 0xff);
-//         if (trace_state == 0x00) {
-//             trace_cnt++;
-//             if (trace_cnt == 10) {
-//                 trace_flag = 1; // 检测到轨迹
-//             }
-//         } else {
-//             trace_cnt = 0;
-//             // if (Trace_ReadRegister() == 0b111)
-//             if (trace_state > 0x08) {
-//                 left_speed = motor_left_base - 20, right_speed = motor_right_base + 20;
-//             } else if (trace_state < 0x04) {
-//                 left_speed = motor_left_base + 20, right_speed = motor_right_base - 50;
-//             } else {
-//                 left_speed = motor_left_base, right_speed = motor_right_base;
-//             }
-//             printf("left:%d right:%d\r\n", left_speed, right_speed);
-//             Car_Speed(work.car, left_speed, right_speed);
-//         }
-
-//         i++;
-//         if (i == 10) {
-//             i   = 0;
-//             led = !led;
-//             HAL_GPIO_WritePin(GPIOB, LED3_Pin, led ? GPIO_PIN_SET : GPIO_PIN_RESET); // 切换LED状态
-//         }
-//         HAL_Delay(10);
-//     }
-//     HAL_Delay(500);
-//     // 停止车辆并复位舵机
-//     Car_Speed(work.car, 0, 0);
-//     PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID); // 设置舵机到中位
-// }
-
-// 模式2：循迹转180°
+// 模式2：右转循迹转180°
 void mode2()
 {
-    Car_Speed(work.car, 100, 100);
+    printf("begin yaw:%.2f\r\n", work.YawZ);
+
+    Car_Speed(work.car, 0, 0);
     int trace_cnt           = 0;
     uint8_t trace_flag      = 0;
     uint8_t trace_state     = 0;
-    uint8_t motor_left_base = 120, motor_right_base = 60;
+    uint8_t motor_left_base = 90, motor_right_base = 40;
     uint8_t left_speed, right_speed;
-    int turn_pulse = SERVO_PWM_MID + 700;                   // 设定转向舵机脉冲宽度
+    int turn_pulse = SERVO_PWM_MID + 750;                   // 设定转向舵机脉冲宽度
     PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse);           // 设置舵机到转向位置
     Car_Speed(work.car, motor_left_base, motor_right_base); // 启动车辆
-    uint8_t i   = 0;
-    uint8_t led = 0;
     while (trace_flag == 0) {
         trace_state = ~Trace_ReadRegister();
         // trace_state &= 0xff;
-        printf("Trace State: %02X\r\n", trace_state);
+        // printf("Trace State: %02X\r\n", trace_state);
         // printf("Trace compare: %d\r\n", trace_state == 0xff);
         if (trace_state == 0x00) {
             trace_cnt++;
-            if (trace_cnt == 10) {
+            if (trace_cnt == 20) {
                 trace_flag = 1; // 检测到轨迹
             }
         } else {
             trace_cnt = 0;
-            // if (Trace_ReadRegister() == 0b111)
-            if (trace_state > 0x08) {
+            if (trace_state > 0x20) {
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse - 500); // 设置舵机到转向位置
+                left_speed = motor_left_base - 30, right_speed = motor_right_base + 20;
+            } else if (trace_state > 0x10) {
+                // PCA9685_SetServoPulse(&hi2c1, 0, turn_pulsen - 100);           // 设置舵机到转向位置
+                // left_speed = motor_left_base - 20, right_speed = motor_right_base + 20;
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
+                left_speed = motor_left_base - 30, right_speed = motor_right_base + 30;
+            } else if (trace_state > 0x04) {
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
                 left_speed = motor_left_base - 20, right_speed = motor_right_base + 20;
             } else if (trace_state < 0x04) {
-                left_speed = motor_left_base + 20, right_speed = motor_right_base - 50;
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
+                left_speed = motor_left_base + 30, right_speed = motor_right_base - 30;
             } else {
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
                 left_speed = motor_left_base, right_speed = motor_right_base;
             }
-            printf("left:%d right:%d\r\n", left_speed, right_speed);
+            // printf("left:%d right:%d\r\n", left_speed, right_speed);
             Car_Speed(work.car, left_speed, right_speed);
         }
 
-        i++;
-        if (i == 10) {
-            i   = 0;
-            led = !led;
-            HAL_GPIO_WritePin(GPIOB, LED3_Pin, led ? GPIO_PIN_SET : GPIO_PIN_RESET); // 切换LED状态
-        }
+        blink();
         HAL_Delay(10);
     }
-    HAL_Delay(150);
+    Car_Speed(work.car, 0, 0);
+    PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID + 400);
+    HAL_Delay(50);
+    Car_Speed(work.car, 80, 20);
+    HAL_Delay(800);
+    // HAL_Delay(200);
     // 停止车辆并复位舵机
     Car_Speed(work.car, 0, 0);
     PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID); // 设置舵机到中位
+    printf("end yaw:%.2f\r\n", work.YawZ);
 }
 
+// 模式3：左转循迹180度
 void mode3()
 {
+    printf("begin yaw:%.2f\r\n", work.YawZ);
+
+    Car_Speed(work.car, 0, 0);
+    int trace_cnt           = 0;
+    uint8_t trace_flag      = 0;
+    uint8_t trace_state     = 0;
+    uint8_t motor_left_base = 40, motor_right_base = 90;
+    uint8_t left_speed, right_speed;
+    int turn_pulse = SERVO_PWM_MID - 750;                   // 设定转向舵机脉冲宽度
+    PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse);           // 设置舵机到转向位置
+    Car_Speed(work.car, motor_left_base, motor_right_base); // 启动车辆
+    while (trace_flag == 0) {
+        trace_state = ~Trace_ReadRegister();
+        // trace_state &= 0xff;
+        // printf("Trace State: %02X\r\n", trace_state);
+        // printf("Trace compare: %d\r\n", trace_state == 0xff);
+        if (trace_state == 0x00) {
+            trace_cnt++;
+            if (trace_cnt == 20) {
+                trace_flag = 1; // 检测到轨迹
+            }
+        } else {
+            trace_cnt = 0;
+            if (trace_state < 0x04) {
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse + 500); // 设置舵机到转向位置
+                left_speed = motor_left_base + 20, right_speed = motor_right_base - 30;
+            } else if (trace_state < 0x08) {
+                // PCA9685_SetServoPulse(&hi2c1, 0, turn_pulsen - 100);           // 设置舵机到转向位置
+                // left_speed = motor_left_base - 20, right_speed = motor_right_base + 20;
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
+                left_speed = motor_left_base + 30, right_speed = motor_right_base - 30;
+            } else if (trace_state < 0x20) {
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
+                left_speed = motor_left_base + 20, right_speed = motor_right_base - 20;
+            } else if (trace_state > 0x04) {
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
+                left_speed = motor_left_base - 30, right_speed = motor_right_base + 30;
+            } else {
+                PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse); // 设置舵机到转向位置
+                left_speed = motor_left_base, right_speed = motor_right_base;
+            }
+            // printf("left:%d right:%d\r\n", left_speed, right_speed);
+            Car_Speed(work.car, left_speed, right_speed);
+        }
+
+        blink();
+        HAL_Delay(10);
+    }
+    Car_Speed(work.car, 0, 0);
+    PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID - 400);
+    HAL_Delay(50);
+    Car_Speed(work.car, 20, 80);
+    HAL_Delay(800);
+    // HAL_Delay(200);
+    // 停止车辆并复位舵机
+    Car_Speed(work.car, 0, 0);
+    PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID); // 设置舵机到中位
+    printf("end yaw:%.2f\r\n", work.YawZ);
 }
+
+// 模式4：141.35度直行
 void mode4()
 {
+    printf("yaw:%.2f\r\n", work.YawZ);
+
+    Car_Speed(work.car, 0, 0);
+    int trace_cnt           = 0;
+    uint8_t trace_flag      = 0;
+    uint8_t trace_state     = 0;
+    uint8_t motor_left_base = 80, motor_right_base = 80;
+    int turn_pulse = SERVO_PWM_MID;                         // 设定转向舵机脉冲宽度
+    PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse);           // 设置舵机到转向位置
+    Car_Speed(work.car, motor_left_base, motor_right_base); // 启动车辆
+    float target_yaw = 141.35;
+    // float target_yaw = 145.35;
+    while (trace_flag == 0) {
+        // printf("")
+        trace_state = Trace_ReadRegister();
+        printf("Trace State: %02X\r\n", trace_state);
+        if (trace_state != 0xff) {
+            trace_cnt++;
+            if (trace_cnt == 5) {
+                trace_flag = 1; // 检测到轨迹
+            }
+        } else {
+            trace_cnt = 0;
+        }
+
+        // 读取角度数据
+
+        int servo_pulse = SERVO_PWM_MID + (work.car->speed > 0 ? 1 : -1) * (int)((work.YawZ - target_yaw) * 40); // 将YawZ转换为舵机脉冲宽度
+        if (servo_pulse < 1000) servo_pulse = 1000;                                                              // 限制最小脉冲宽度
+        if (servo_pulse > 2000) servo_pulse = 2000;                                                              // 限制最大脉冲宽度
+        printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
+        PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
+
+        blink();
+        HAL_Delay(10);
+    }
+    Car_Speed(work.car, 0, 0);
+}
+
+void straight_by_yaw(float target_yaw)
+{
+    printf("begin yaw:%.2f\r\n", work.YawZ);
+
+    Car_Speed(work.car, 0, 0);
+    int trace_cnt           = 0;
+    uint8_t trace_flag      = 0;
+    uint8_t trace_state     = 0;
+    uint8_t motor_left_base = 60, motor_right_base = 60;
+    int turn_pulse = SERVO_PWM_MID;                         // 设定转向舵机脉冲宽度
+    PCA9685_SetServoPulse(&hi2c1, 0, turn_pulse);           // 设置舵机到转向位置
+    Car_Speed(work.car, motor_left_base, motor_right_base); // 启动车辆
+    while (trace_flag == 0) {
+        // printf("")
+        trace_state = Trace_ReadRegister();
+        // printf("Trace State: %02X\r\n", trace_state);
+        if (trace_state != 0xff) {
+            trace_cnt++;
+            if (trace_cnt == 5) {
+                trace_flag = 1; // 检测到轨迹
+            }
+        } else {
+            trace_cnt = 0;
+        }
+
+        // 读取角度数据
+
+        int servo_pulse = SERVO_PWM_MID + (work.car->speed > 0 ? 1 : -1) * (int)((work.YawZ - target_yaw) * 30); // 将YawZ转换为舵机脉冲宽度
+        if (servo_pulse < 1000) servo_pulse = 1000;                                                              // 限制最小脉冲宽度
+        if (servo_pulse > 2000) servo_pulse = 2000;                                                              // 限制最大脉冲宽度
+        // printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
+        PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
+
+        blink();
+        HAL_Delay(10);
+    }
+    Car_Speed(work.car, 0, 0);
+    printf("end yaw:%.2f\r\n", work.YawZ);
+}
+
+void turn_right_time(int ms)
+{
+    Car_Speed(work.car, 0, 0);
+    Car_Speed(work.car, 50, 0);
+    HAL_Delay(ms);
+    Car_Speed(work.car, 0, 0);
 }

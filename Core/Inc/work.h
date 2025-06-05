@@ -6,7 +6,7 @@
 #include "servo.h"
 #include "pca9685.h"
 
-#define SERVO_PWM_MID 1570 // 中位脉宽
+#define SERVO_PWM_MID 1500 // 中位脉宽
 
 typedef struct {
     uint8_t mode;               // 工作模式
@@ -24,10 +24,13 @@ typedef struct {
 extern WorkState work; // 工作状态实例
 
 void WorkInit(CarConfig *car, PCA9685_HandleTypeDef *pca);
+void blink();
+void straight_by_yaw(float target_yaw);
 void mode0(); // 模式0：待机，停止并矫正
 void mode1(); // 模式1：直行
 void mode2();
 void mode3();
 void mode4();
+void turn_right_time(int ms);
 
 #endif // !__WORK_H

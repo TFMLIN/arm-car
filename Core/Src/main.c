@@ -124,16 +124,15 @@ int main(void)
     // PCA9685_SetDebug(1);
 
     // 初始化PCA9685
-    PCA9685_Init(&hi2c1, 1);
+    PCA9685_Init(&hi2c1, 0);
 
     // 设置PWM频率为50Hz（舵机常用频率）
     PCA9685_SetPWMFreq(&hi2c1, 50.0f);
-    int mid = 1570;
-    PCA9685_SetServoPulse(&hi2c1, 0, mid); // 设置第一个舵机到中位1.5ms
+    PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID); // 设置第一个舵机到中位1.5ms
     Car_Init(&car);
     Car_Speed_Percentage(&car, 0, 0);
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 10; i++) {
         HAL_GPIO_WritePin(GPIOB, LED3_Pin, (i & 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
         HAL_Delay(100);
     }
@@ -147,31 +146,21 @@ int main(void)
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     int i = 0, led = 0;
-    // int mode = -1;
-    HAL_Delay(1000);                 // 等待1秒钟，确保系统稳定
     WorkInit(&car, &pca9685_handle); // 初始化工作状态
     mode0();
-    // mode1();         // 进入模式1，开始直行
-    HAL_Delay(1000); // 等待1秒钟，确保系统稳定
+    // mode1();
+    // mode2();
+    // mode4();
+    // straight_by_yaw(0);
+    mode1();
     mode2();
+    straight_by_yaw(141.35 - 5);
+    mode3();
+    straight_by_yaw(38.65 + 5);
+    mode2();
+
     while (1) {
-        // uint8_t trace_state = Trace_ReadRegister();
-        // printf("in main Trace State: %02X\r\n", trace_state);
-        // if (YawZ > 180) {
-        //     YawZ -= 360;
-        // }
-        // int servo_pulse = mid + (car.speed > 0 ? 1 : -1) * (int)(YawZ * 30); // 将YawZ转换为舵机脉冲宽度
-        // if (servo_pulse < 1000) servo_pulse = 1000;                          // 限制最小脉冲宽度
-        // if (servo_pulse > 2000) servo_pulse = 2000;                          // 限制最大脉冲宽度
-        // printf("YawZ: %.2f, Servo Pulse: %d\r\n", YawZ, servo_pulse);
-        // PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
-        i++;
-        if (i == 10) {
-            i   = 0;
-            led = !led;
-            HAL_GPIO_WritePin(GPIOB, LED3_Pin, led ? GPIO_PIN_SET : GPIO_PIN_RESET); // 切换LED状态
-        }
-        HAL_Delay(10);
+        blink();
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -235,6 +224,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     /* USER CODE END Callback 1 */
 }
 
+// 角度数据逆时针0~360
 void jy61p_ReceiveData(uint8_t data)
 {
     static uint8_t index = 0;
