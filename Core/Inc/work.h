@@ -25,7 +25,9 @@ extern WorkState work; // 工作状态实例
 
 void WorkInit(CarConfig *car, PCA9685_HandleTypeDef *pca);
 void blink();
-void straight_by_yaw(float target_yaw);
+void straight_by_yaw_1(float target_yaw);
+void straight_by_yaw_2(float target_yaw);
+
 void mode0(); // 模式0：待机，停止并矫正
 void mode1(); // 模式1：直行
 void mode2();

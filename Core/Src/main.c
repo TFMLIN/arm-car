@@ -147,16 +147,20 @@ int main(void)
     /* USER CODE BEGIN WHILE */
     int i = 0, led = 0;
     WorkInit(&car, &pca9685_handle); // 初始化工作状态
-    mode0();
+
     // mode1();
     // mode2();
     // mode4();
     // straight_by_yaw(0);
+
+    mode0();
     mode1();
     mode2();
-    straight_by_yaw(141.35 - 5);
+    straight_by_yaw_1(141.35 - 10);
+
     mode3();
-    straight_by_yaw(38.65 + 5);
+    straight_by_yaw_2(38.65 + 10);
+
     mode2();
 
     while (1) {
