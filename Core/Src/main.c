@@ -115,7 +115,6 @@ int main(void)
     HAL_UART_Receive_IT(&huart1, &RxData1, 1);
     HAL_UART_Receive_IT(&huart2, &RxData2, 1); // 启动UART接收中断
 
-
     for (int i = 0; i < 10; i++) {
         HAL_GPIO_WritePin(GPIOB, LED3_Pin, (i & 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
         HAL_Delay(100);
@@ -169,38 +168,9 @@ int main(void)
 
     // mode2();
 
-    const int ANGLE1 = 0, ANGLE2 = 180 + 38.65 + 38.65 + 13;
-
-    straight_by_yaw_1(ANGLE1, 1);
-
-    mode3();
-    straight_by_yaw_2(ANGLE2, 0);
-
-    mode2();
-
-    straight_by_yaw_1(ANGLE1, 1);
-
-    mode3();
-    straight_by_yaw_2(ANGLE2, 0);
-
-    mode2();
-
-    straight_by_yaw_1(ANGLE1, 1);
-
-    mode3();
-    straight_by_yaw_2(ANGLE2, 0);
-
-    mode2();
-
-    straight_by_yaw_1(ANGLE1, 1);
-
-    mode3();
-    straight_by_yaw_2(ANGLE2, 0);
-
-    mode2();
-
+    question_4();
     while (1) {
-        printf("yaw:%.2f\r\n", work.YawZ);
+        // printf("yaw:%.2f\r\n", work.YawZ);
         blink();
         /* USER CODE END WHILE */
 

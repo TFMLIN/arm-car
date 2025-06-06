@@ -29,7 +29,7 @@ void Car_Init(CarConfig *car)
     car->motor[0] = (MotorConfig){htim1, TIM_CHANNEL_1, 1, MOTOR1_IN1_GPIO_Port, MOTOR1_IN2_GPIO_Port, MOTOR1_IN1_Pin, MOTOR1_IN2_Pin, htim2, 0};
     car->motor[1] = (MotorConfig){htim1, TIM_CHANNEL_4, 0, MOTOR2_IN1_GPIO_Port, MOTOR2_IN2_GPIO_Port, MOTOR2_IN1_Pin, MOTOR2_IN2_Pin, htim3, 0};
     for (int i = 0; i < MOTOR_COUNT; i++) {
-        PID_Init(&car->motor[i].pid, 190, 800, 0.1, 0, MAX_PWM);
+        PID_Init(&car->motor[i].pid, 200, 800, 0.13, 0, MAX_PWM);
     }
     for (int i = 0; i < MOTOR_COUNT; i++) {
         __HAL_TIM_SET_COUNTER(&car->motor[i].en_htim, 0);
@@ -76,6 +76,7 @@ void Car_Speed_PWM(CarConfig *car, int s1, int s2)
 
 void Motor_Speed(MotorConfig *motor, int speed)
 {
+    if (speed == 0) PID_Reset(&motor->pid);
     if (speed > MAX_SPEED)
         speed = MAX_SPEED;
     else if (speed < -MAX_SPEED)
@@ -118,14 +119,14 @@ void Motor_Speed_Control(CarConfig *car)
         }
     }
 
-    // printf("Speed:%d,%d,%d,%d\r\n", car->motor[0].encoder_count, car->motor[1].encoder_count,
-    //        car->motor[0].target_speed, car->motor[1].target_speed);
+    printf("Speed:%d,%d,%d,%d\r\n", car->motor[0].encoder_count, car->motor[1].encoder_count,
+           car->motor[0].target_speed, car->motor[1].target_speed);
 
     // 计算 PID 控制量
     for (i = 0; i < MOTOR_COUNT; i++) {
         float dt      = 0.1f;
         float control = PID_Compute(&car->motor[i].pid, car->motor[i].encoder_count, dt);
-        // printf("Control:%f\r\n", control);
+        printf("Control:%f\r\n", control);
         Motor_Speed_PWM(&car->motor[i], control);
     }
 

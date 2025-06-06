@@ -34,5 +34,6 @@ void mode2();
 void mode3();
 void mode4();
 void turn_right_time(int ms);
+void question_4();
 
 #endif // !__WORK_H

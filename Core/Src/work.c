@@ -198,7 +198,7 @@ void mode3()
     Car_Speed(work.car, 0, 0);
     HAL_Delay(200);
     PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID - 400);
-    HAL_Delay(50);               // 50
+    HAL_Delay(50);                  // 50
     Car_Speed(work.car, -150, 100); // 20  80
     HAL_Delay(600);
     // HAL_Delay(200);
@@ -359,3 +359,37 @@ void turn_right_time(int ms)
 //     float err = work.zYawZ - target_angle;
 //     if (err >= 180)
 // }
+
+void question_4()
+{
+
+    const int ANGLE1 = 0, ANGLE2 = 180 + 38.65 + 38.65 + 13;
+
+    straight_by_yaw_1(ANGLE1, 1);
+
+    mode3();
+    straight_by_yaw_2(ANGLE2, 0);
+
+    mode2();
+
+    straight_by_yaw_1(ANGLE1, 1);
+
+    mode3();
+    straight_by_yaw_2(ANGLE2, 0);
+
+    mode2();
+
+    straight_by_yaw_1(ANGLE1, 1);
+
+    mode3();
+    straight_by_yaw_2(ANGLE2, 0);
+
+    mode2();
+
+    straight_by_yaw_1(ANGLE1, 1);
+
+    mode3();
+    straight_by_yaw_2(ANGLE2, 0);
+
+    mode2();
+}

@@ -15,12 +15,20 @@ void PID_Init(PID_Controller *pid, float kp, float ki, float kd, float setpoint,
     pid->max_control    = max_control;
 }
 
+void PID_Reset(PID_Controller *pid)
+{
+    pid->integral       = 0.0f;
+    pid->previous_error = 0.0f;
+}
+
 // PID 控制算法
 float PID_Compute(PID_Controller *pid, float measured_value, float dt)
 {
     float error = pid->setpoint - measured_value;
     // printf("Error:%f\r\n", error);
-    pid->integral += error * dt;
+    if (error < 120) {
+        pid->integral += error * dt;
+    }
     float derivative    = (error - pid->previous_error) / dt;
     float output        = pid->kp * error + pid->ki * pid->integral + pid->kd * derivative;
     pid->previous_error = error;
