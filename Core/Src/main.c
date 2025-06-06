@@ -166,7 +166,7 @@ int main(void)
     straight_by_yaw_1(0, 1);
 
     mode3();
-    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
+    straight_by_yaw_2(180 + 38.65 + 38.65 + 13.5, 0);
 
     mode2();
 

@@ -325,7 +325,7 @@ void straight_by_yaw_2(float target_yaw, uint8_t sub)
             trace_cnt = 0;
         }
         if (sub && work.YawZ > 180) work.YawZ -= 360;
-        if (car <= 300) {
+        if (car <= 280) {
             int servo_pulse = SERVO_PWM_MID + (work.car->speed > 0 ? 1 : -1) * (int)((work.YawZ - target_yaw) * 40); // 将YawZ转换为舵机脉冲宽度
             if (servo_pulse < 1000) servo_pulse = 1000;                                                              // 限制最小脉冲宽度
             if (servo_pulse > 2000) servo_pulse = 2000;                                                              // 限制最大脉冲宽度
