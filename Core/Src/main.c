@@ -114,6 +114,12 @@ int main(void)
     printf("begin\r\n");
     HAL_UART_Receive_IT(&huart1, &RxData1, 1);
     HAL_UART_Receive_IT(&huart2, &RxData2, 1); // 启动UART接收中断
+
+
+    for (int i = 0; i < 10; i++) {
+        HAL_GPIO_WritePin(GPIOB, LED3_Pin, (i & 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        HAL_Delay(100);
+    }
     HAL_Delay(5000);
     zRollx = RollX, zPitchY = PitchY, zYawZ = YawZ;
     if (zYawZ == 360) {
@@ -163,31 +169,33 @@ int main(void)
 
     // mode2();
 
-    straight_by_yaw_1(0, 1);
+    const int ANGLE1 = 0, ANGLE2 = 180 + 38.65 + 38.65 + 13;
+
+    straight_by_yaw_1(ANGLE1, 1);
 
     mode3();
-    straight_by_yaw_2(180 + 38.65 + 38.65 + 13.5, 0);
+    straight_by_yaw_2(ANGLE2, 0);
 
     mode2();
 
-    straight_by_yaw_1(0, 1);
+    straight_by_yaw_1(ANGLE1, 1);
 
     mode3();
-    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
+    straight_by_yaw_2(ANGLE2, 0);
 
     mode2();
 
-    straight_by_yaw_1(0, 1);
+    straight_by_yaw_1(ANGLE1, 1);
 
     mode3();
-    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
+    straight_by_yaw_2(ANGLE2, 0);
 
     mode2();
 
-    straight_by_yaw_1(0, 1);
+    straight_by_yaw_1(ANGLE1, 1);
 
     mode3();
-    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
+    straight_by_yaw_2(ANGLE2, 0);
 
     mode2();
 

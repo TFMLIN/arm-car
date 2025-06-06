@@ -132,10 +132,11 @@ void mode2()
         HAL_Delay(10);
     }
     Car_Speed(work.car, 0, 0);
+    HAL_Delay(200);
     PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID + 400);
     HAL_Delay(50);
-    Car_Speed(work.car, 80, 20);
-    HAL_Delay(800);
+    Car_Speed(work.car, 100, -150);
+    HAL_Delay(600);
     // HAL_Delay(200);
     // 停止车辆并复位舵机
     Car_Speed(work.car, 0, 0);
@@ -195,13 +196,14 @@ void mode3()
         HAL_Delay(10);
     }
     Car_Speed(work.car, 0, 0);
+    HAL_Delay(200);
     PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID - 400);
     HAL_Delay(50);               // 50
-    Car_Speed(work.car, 20, 80); // 20  80
-    HAL_Delay(800);
+    Car_Speed(work.car, -150, 100); // 20  80
+    HAL_Delay(600);
     // HAL_Delay(200);
     // 停止车辆并复位舵机
-    Car_Speed(work.car, 0, 0);
+    Car_Speed(work.car, 0, 120);
     PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID); // 设置舵机到中位
     printf("end yaw:%.2f\r\n", work.YawZ);
 }
@@ -285,7 +287,7 @@ void straight_by_yaw_1(float target_yaw, uint8_t sub)
             // printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
             PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
         } else {
-            PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID - 200);
+            PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID - 400);
         }
         // 读取角度数据
 
@@ -325,14 +327,14 @@ void straight_by_yaw_2(float target_yaw, uint8_t sub)
             trace_cnt = 0;
         }
         if (sub && work.YawZ > 180) work.YawZ -= 360;
-        if (car <= 280) {
+        if (car <= 330) {
             int servo_pulse = SERVO_PWM_MID + (work.car->speed > 0 ? 1 : -1) * (int)((work.YawZ - target_yaw) * 40); // 将YawZ转换为舵机脉冲宽度
-            if (servo_pulse < 1000) servo_pulse = 1000;                                                              // 限制最小脉冲宽度
-            if (servo_pulse > 2000) servo_pulse = 2000;                                                              // 限制最大脉冲宽度
+            if (servo_pulse < 800) servo_pulse = 800;                                                                // 限制最小脉冲宽度
+            if (servo_pulse > 2200) servo_pulse = 2200;                                                              // 限制最大脉冲宽度
             // printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
             PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
         } else {
-            PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID + 280);
+            PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID + 400);
         }
         //     // 读取角度数据
         printf("yaw:%.2f, %.2f\r\n", work.YawZ, target_yaw);
