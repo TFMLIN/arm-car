@@ -114,7 +114,7 @@ int main(void)
     printf("begin\r\n");
     HAL_UART_Receive_IT(&huart1, &RxData1, 1);
     HAL_UART_Receive_IT(&huart2, &RxData2, 1); // 启动UART接收中断
-    HAL_Delay(100);
+    HAL_Delay(5000);
     zRollx = RollX, zPitchY = PitchY, zYawZ = YawZ;
     if (zYawZ == 360) {
         zYawZ = 0; // 初始化YawZ为0
@@ -154,16 +154,45 @@ int main(void)
     // straight_by_yaw(0);
 
     mode0();
-    mode1();
-    mode2();
-    straight_by_yaw_1(141.35 - 10);
+    // mode1();
+    // mode2();
+    // straight_by_yaw_1(141.35 - 10);
+
+    // mode3();
+    // straight_by_yaw_2(38.65 + 9);
+
+    // mode2();
+
+    straight_by_yaw_1(0, 1);
 
     mode3();
-    straight_by_yaw_2(38.65 + 9);
+    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
+
+    mode2();
+
+    straight_by_yaw_1(0, 1);
+
+    mode3();
+    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
+
+    mode2();
+
+    straight_by_yaw_1(0, 1);
+
+    mode3();
+    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
+
+    mode2();
+
+    straight_by_yaw_1(0, 1);
+
+    mode3();
+    straight_by_yaw_2(180 + 38.65 + 38.65 + 9, 0);
 
     mode2();
 
     while (1) {
+        printf("yaw:%.2f\r\n", work.YawZ);
         blink();
         /* USER CODE END WHILE */
 
