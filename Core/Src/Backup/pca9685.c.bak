@@ -2,22 +2,37 @@
 #include "stdio.h"
 #include "math.h"
 
-// Internal I2C handle for the module
-static I2C_HandleTypeDef *pca9685_hi2c = NULL;
-static uint8_t pca9685_address         = 0x40 << 1;
-static uint8_t debug_enabled           = 0;
-
 // Private function prototypes
 static HAL_StatusTypeDef PCA9685_Write(uint8_t reg, uint8_t value);
 static uint8_t PCA9685_Read(uint8_t reg);
+
+PCA9685_HandleTypeDef pca9685_handle = {
+    .hi2c          = NULL,
+    .debug_enabled = 0,
+    .address       = PCA9685_ADDRESS,
+};
+
+void PCA9685_Init(I2C_HandleTypeDef *hi2c, uint8_t debug)
+{
+    pca9685_handle.hi2c          = hi2c;
+    pca9685_handle.debug_enabled = debug;
+    printf("PCA9685 Init\r\n");
+
+    // Reset the device to normal mode
+    PCA9685_Write(PCA9685_MODE1, 0x00);
+
+    if (pca9685_handle.debug_enabled) {
+        printf("PCA9685 Initialized\r\n");
+    }
+}
 
 // Private function implementations
 static HAL_StatusTypeDef PCA9685_Write(uint8_t reg, uint8_t value)
 {
     uint8_t data[2]          = {reg, value};
-    HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(pca9685_hi2c, pca9685_address, data, 2, 100);
+    HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(pca9685_handle.hi2c, pca9685_handle.address, data, 2, 100);
 
-    if (debug_enabled) {
+    if (pca9685_handle.debug_enabled) {
         printf("I2C: Write 0x%02X to register 0x%02X\r\n", value, reg);
     }
 
@@ -34,52 +49,37 @@ static uint8_t PCA9685_Read(uint8_t reg)
     HAL_StatusTypeDef status;
 
     // First write the register address
-    status = HAL_I2C_Master_Transmit(pca9685_hi2c, pca9685_address, &reg, 1, 100);
+    status = HAL_I2C_Master_Transmit(pca9685_handle.hi2c, pca9685_handle.address, &reg, 1, 100);
     if (status != HAL_OK) {
         printf("PCA9685 Read Address Error: %d\r\n", status);
         return 0;
     }
 
     // Then read the data
-    status = HAL_I2C_Master_Receive(pca9685_hi2c, pca9685_address, &result, 1, 100);
+    status = HAL_I2C_Master_Receive(pca9685_handle.hi2c, pca9685_handle.address, &result, 1, 100);
     if (status != HAL_OK) {
         printf("PCA9685 Read Data Error: %d\r\n", status);
         return 0;
     }
 
-    if (debug_enabled) {
+    if (pca9685_handle.debug_enabled) {
         printf("I2C: Device 0x%02X returned 0x%02X from reg 0x%02X\r\n",
-               pca9685_address >> 1, result, reg);
+               pca9685_handle.address >> 1, result, reg);
     }
 
     return result;
 }
 
-void PCA9685_Init(I2C_HandleTypeDef *hi2c)
-{
-    printf("PCA9685 Init\r\n");
-
-    // Store the I2C handle for later use
-    pca9685_hi2c = hi2c;
-
-    if (debug_enabled) {
-        printf("Reseting PCA9685\r\n");
-    }
-
-    // Reset the device to normal mode
-    PCA9685_Write(PCA9685_MODE1, 0x00);
-}
-
 void PCA9685_SetDebug(uint8_t enable)
 {
-    debug_enabled = enable;
+    pca9685_handle.debug_enabled = enable;
 }
 
 void PCA9685_SetPWMFreq(I2C_HandleTypeDef *hi2c, float freq)
 {
     // Store the I2C handle if not already stored
-    if (pca9685_hi2c == NULL) {
-        pca9685_hi2c = hi2c;
+    if (pca9685_handle.hi2c == NULL) {
+        pca9685_handle.hi2c = hi2c;
     }
 
     // Calculate prescale value
@@ -88,14 +88,14 @@ void PCA9685_SetPWMFreq(I2C_HandleTypeDef *hi2c, float freq)
     prescaleval /= freq;
     prescaleval -= 1.0f;
 
-    if (debug_enabled) {
+    if (pca9685_handle.debug_enabled) {
         printf("Setting PWM frequency to %.1f Hz\r\n", freq);
         printf("Estimated pre-scale: %.1f\r\n", prescaleval);
     }
 
     uint8_t prescale = (uint8_t)(prescaleval + 0.5f); // Round to nearest integer
 
-    if (debug_enabled) {
+    if (pca9685_handle.debug_enabled) {
         printf("Final pre-scale: %d\r\n", prescale);
     }
 
@@ -122,11 +122,11 @@ void PCA9685_SetPWMFreq(I2C_HandleTypeDef *hi2c, float freq)
 void PCA9685_SetPWM(I2C_HandleTypeDef *hi2c, uint8_t channel, uint16_t on, uint16_t off)
 {
     // Store the I2C handle if not already stored
-    if (pca9685_hi2c == NULL) {
-        pca9685_hi2c = hi2c;
+    if (pca9685_handle.hi2c == NULL) {
+        pca9685_handle.hi2c = hi2c;
     }
 
-    if (debug_enabled) {
+    if (pca9685_handle.debug_enabled) {
         printf("channel: %d  LED_ON: %d LED_OFF: %d\r\n", channel, on, off);
     }
 
@@ -142,15 +142,15 @@ void PCA9685_SetPWM(I2C_HandleTypeDef *hi2c, uint8_t channel, uint16_t on, uint1
 void PCA9685_SetServoPulse(I2C_HandleTypeDef *hi2c, uint8_t channel, uint16_t pulse)
 {
     // Store the I2C handle if not already stored
-    if (pca9685_hi2c == NULL) {
-        pca9685_hi2c = hi2c;
+    if (pca9685_handle.hi2c == NULL) {
+        pca9685_handle.hi2c = hi2c;
     }
 
     // Calculate pulse value for 50Hz PWM (20ms period)
     // pulse is in microseconds, convert to 4096 scale
     uint16_t pulse_value = (uint16_t)((float)pulse * 4096.0f / 20000.0f);
 
-    if (debug_enabled) {
+    if (pca9685_handle.debug_enabled) {
         printf("SetServoPulse Channel:%d Pulse:%dus Value:%d\r\n", channel, pulse, pulse_value);
     }
 
@@ -166,7 +166,7 @@ void PCA9685_SetServoAngle(I2C_HandleTypeDef *hi2c, uint8_t channel, float angle
     // Convert angle to pulse width (500us to 2500us)
     uint16_t pulse = (uint16_t)(500 + (angle / 180.0f) * 2000);
 
-    if (debug_enabled) {
+    if (pca9685_handle.debug_enabled) {
         printf("SetServoAngle Channel:%d Angle:%.2f Pulse:%dus\r\n", channel, angle, pulse);
     }
 

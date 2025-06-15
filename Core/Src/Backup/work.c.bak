@@ -67,50 +67,7 @@ void mode1()
         if (work.YawZ > 180) {
             work.YawZ -= 360;
         }
-        
         int servo_pulse = SERVO_PWM_MID + (work.car->speed > 0 ? 1 : -1) * (int)(work.YawZ * 30); // 将YawZ转换为舵机脉冲宽度
-        if (servo_pulse < 1000) servo_pulse = 1000;                                               // 限制最小脉冲宽度
-        if (servo_pulse > 2000) servo_pulse = 2000;                                               // 限制最大脉冲宽度
-        printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
-        PCA9685_SetServoPulse(&hi2c1, 0, servo_pulse); // 设置舵机脉冲宽度
-
-        blink();
-        HAL_Delay(10);
-    }
-    Car_Speed(work.car, 0, 0);
-    printf("end yaw:%.2f\r\n", work.YawZ);
-}
-
-void mode11()
-{
-    printf("begin yaw:%.2f\r\n", work.YawZ);
-    
-    Car_Speed(work.car, 100, 100);
-    int trace_cnt       = 0;
-    uint8_t trace_flag  = 0;
-    uint8_t trace_state = 0;
-    uint8_t i           = 0;
-    uint8_t led         = 0;
-    while (trace_flag == 0) {
-        trace_state = Trace_ReadRegister();
-        printf("Trace State: %02X\r\n", trace_state);
-        if (trace_state != 0xff) {
-            trace_cnt++;
-            if (trace_cnt == 5) {
-                trace_flag = 1; // 检测到轨迹
-            }
-        } else {
-            trace_cnt = 0;
-        }
-
-        // 读取角度数据
-        if (work.YawZ > 180) {
-            work.YawZ -= 360;
-        }
-        if(work.YawZ < -180) {
-            work.YawZ += 360;
-        }
-        int servo_pulse = SERVO_PWM_MID + (work.car->speed > 0 ? 1 : -1) * (int)(work.YawZ * 25); // 将YawZ转换为舵机脉冲宽度
         if (servo_pulse < 1000) servo_pulse = 1000;                                               // 限制最小脉冲宽度
         if (servo_pulse > 2000) servo_pulse = 2000;                                               // 限制最大脉冲宽度
         printf("YawZ: %.2f, Servo Pulse: %d\r\n", work.YawZ, servo_pulse);
@@ -244,13 +201,12 @@ void mode22()
     HAL_Delay(50);
     Car_Speed(work.car, 100, -150);
     // HAL_Delay(600);
-    HAL_Delay(300);
+    HAL_Delay(350);
     // 停止车辆并复位舵机
     Car_Speed(work.car, 0, 0);
     // 添加角度同步逻辑（假设转向180°后目标角度为初始值+180°，需根据实际传感器逻辑调整）
-     work.YawZ = work.zYawZ; // 或通过传感器重新读取当前角度
+    // work.YawZ = 0.0f; // 或通过传感器重新读取当前角度
     PCA9685_SetServoPulse(&hi2c1, 0, SERVO_PWM_MID); // 复位舵机
-    HAL_Delay(200);
     printf("end yaw:%.2f\r\n", work.YawZ);
 }
 
@@ -473,16 +429,14 @@ void turn_right_time(int ms)
 void question1(){
     mode0();
     mode1();
-    light_voice();
 }
 
 void question2(){
     mode0();
-    mode22();
-    mode1();
+    // mode2();
+    // mode1();
     //straight_by_yaw_1();
-    // mode22();
-    // light_voice();
+    mode22();
     // work.YawZ = work.zYawZ;
     // mode1();
     //straight_by_yaw_2();
@@ -491,13 +445,10 @@ void question2(){
 void question3(){
     mode0();
     mode2();
-    light_voice();
     straight_by_yaw_1(141.35 - 10, 1);
-    light_voice();
+
     mode3();
-    light_voice();
     straight_by_yaw_2(38.65 + 9, 0);
-    light_voice();
 }
 
 void question4(){
@@ -506,13 +457,6 @@ void question4(){
     const int ANGLE1 = 0, ANGLE2 = 180 + 38.65 + 38.65 + 13;
 
     straight_by_yaw_1(ANGLE1, 1);
-    
-    mode3();
-    straight_by_yaw_2(ANGLE2, 0);
-
-    mode2();
-
-    straight_by_yaw_1(ANGLE1, 1);
 
     mode3();
     straight_by_yaw_2(ANGLE2, 0);
@@ -532,15 +476,11 @@ void question4(){
     straight_by_yaw_2(ANGLE2, 0);
 
     mode2();
-}
 
+    straight_by_yaw_1(ANGLE1, 1);
 
-void light_voice(void) {
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
-    HAL_Delay(50);
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+    mode3();
+    straight_by_yaw_2(ANGLE2, 0);
 
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, GPIO_PIN_SET);
-    HAL_Delay(50);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, GPIO_PIN_RESET);
+    mode2();
 }
