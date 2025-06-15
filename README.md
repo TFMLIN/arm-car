@@ -73,5 +73,48 @@ stm32通过2个pwm接口、4个普通io接口、4个timer接口连接tb6612驱�
 `void PID_Reset(PID_Controller *pid)`用于重置pid的累计误差
 `float PID_Compute(PID_Controller *pid, float measured_value, float dt)`计算得到控制量
 ### 舵机控制
+`void PCA9685_SetServoPulse(I2C_HandleTypeDef *hi2c, uint8_t channel, uint16_t pulse)`设置频率
 ### 循迹模块
+`uint8_t Trace_ReadRegister()`读取灰度传感器的数据，用8位二级制数的每一位表示每个灰度传感器的状态
 ### 陀螺仪
+`void jy61p_ReceiveData(uint8_t data)`函数来处理串口的数据，读取的数据存储在WorkState结构体的三个角度参数中
+### work模块
+该模块用于实现具体的小车运行逻辑
+WorkState是一个存储小城当前运行状态的结构体
+```
+typedef struct {
+    uint8_t mode;               // 工作模式
+    uint8_t update;             // 更新标志
+    float RollX;                // 车体滚转角
+    float PitchY;               // 车体俯仰角
+    float YawZ;                 // 车体偏航角
+    float zRollx;               // 零点校正后的滚转角
+    float zPitchY;              // 零点校正后的俯仰角
+    float zYawZ;                // 零点校正后的偏航角
+    CarConfig *car;             // 车辆配置
+    PCA9685_HandleTypeDef *pca; // PCA9685句柄
+} WorkState;
+
+extern WorkState work; // 工作状态实例
+```
+```
+void WorkInit(CarConfig *car, PCA9685_HandleTypeDef *pca); // 小车的一些初始化
+void blink();   // 控制开发板上的灯一直闪烁，用来提醒用户开发板是否死机（比如忙于处理中断）
+
+// target_yaw是目标角度，sub为1则是-180~180模式，sub为0则是0~360模式
+void straight_by_yaw_1(float target_yaw, uint8_t sub);  // 直一段之后左拐
+void straight_by_yaw_2(float target_yaw, uint8_t sub);  // 之走完之后右拐
+
+void mode0();   // 模式0：待机，停止并矫正
+void mode1();   // 模式1：直行
+void mode2();   // 模式2：右转循迹转180°
+void mode3();   // 模式3：左转循迹转180°
+void turn_right_time(int ms);
+// 2024年电赛H题的4个问题
+void question1();
+void question2();
+void question3();
+void question4();
+
+void light_voice(void);
+```
