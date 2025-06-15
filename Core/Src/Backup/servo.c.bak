@@ -1,7 +1,13 @@
 #include "servo.h"
 
+Servo servo; // Servo instance
+
 void Servo_Init(TIM_HandleTypeDef *htim, uint32_t channel)
 {
+    servo.htim    = htim;    // Store the timer handle
+    servo.channel = channel; // Store the PWM channel
+    servo.angle   = 0.0f;    // Initialize angle to 0 degrees
+
     // Initialize the servo by setting the PWM channel
     HAL_TIM_PWM_Start(htim, channel);
     // Set the initial angle to 0 degrees
@@ -12,6 +18,7 @@ void Servo_Init(TIM_HandleTypeDef *htim, uint32_t channel)
 // This function sets the angle of the servo motor by adjusting the PWM duty cycle
 void Servo_SetAngle(TIM_HandleTypeDef *htim, uint32_t channel, float angle)
 {
+    servo.angle = angle; // Update the servo angle
     // Ensure the angle is within the valid range
     if (angle < 0.0f) angle = 0.0f;
     if (angle > 180.0f) angle = 180.0f;

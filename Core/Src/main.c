@@ -161,14 +161,45 @@ int main(void)
     mode0();
     // mode1();
     // mode2();
-    // straight_by_yaw_1(141.35 - 10);
+    // straight_by_yaw_1(141.35 - 10, 1);
 
     // mode3();
-    // straight_by_yaw_2(38.65 + 9);
+    // straight_by_yaw_2(38.65 + 9, 0);
+
+    question4();
 
     // mode2();
 
-    question_4();
+    // const int ANGLE1 = 0, ANGLE2 = 180 + 38.65 + 38.65 + 13;
+
+    // straight_by_yaw_1(ANGLE1, 1);
+
+    // mode3();
+    // straight_by_yaw_2(ANGLE2, 0);
+
+    // mode2();
+
+    // straight_by_yaw_1(ANGLE1, 1);
+
+    // mode3();
+    // straight_by_yaw_2(ANGLE2, 0);
+
+    // mode2();
+
+    // straight_by_yaw_1(ANGLE1, 1);
+
+    // mode3();
+    // straight_by_yaw_2(ANGLE2, 0);
+
+    // mode2();
+
+    // straight_by_yaw_1(ANGLE1, 1);
+
+    // mode3();
+    // straight_by_yaw_2(ANGLE2, 0);
+
+    // mode2();
+
     while (1) {
         // printf("yaw:%.2f\r\n", work.YawZ);
         blink();

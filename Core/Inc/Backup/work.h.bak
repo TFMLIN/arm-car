@@ -39,6 +39,4 @@ void question2();
 void question3();
 void question4();
 
-void light_voice(void);
-
 #endif // !__WORK_H

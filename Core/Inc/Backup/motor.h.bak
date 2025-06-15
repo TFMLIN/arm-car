@@ -1,5 +1,5 @@
-#ifndef MOTOR_H
-#define MOTOR_H
+#ifndef __MOTOR_H
+#define __MOTOR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,4 +47,4 @@ void Motor_Speed_Control(CarConfig *car);
 }
 #endif
 
-#endif // MOTOR_H
+#endif // __MOTOR_H

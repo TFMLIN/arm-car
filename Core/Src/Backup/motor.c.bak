@@ -118,8 +118,8 @@ void Motor_Speed_Control(CarConfig *car)
         }
     }
 
-    // printf("Speed:%d,%d,%d,%d\r\n", car->motor[0].encoder_count, car->motor[1].encoder_count,
-    //        car->motor[0].target_speed, car->motor[1].target_speed);
+    printf("Speed:%d,%d,%d,%d\r\n", car->motor[0].encoder_count, car->motor[1].encoder_count,
+           car->motor[0].target_speed, car->motor[1].target_speed);
 
     // 计算 PID 控制量
     for (i = 0; i < MOTOR_COUNT; i++) {
